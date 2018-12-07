@@ -1,0 +1,19 @@
+ISDID		int(11)	NO	PRI		auto_increment	# KEY
+ISID		int(11)	NO	MUL	0	
+DDATE		datetime	YES				# Date/Time
+WFDID		int(11)	YES	MUL		
+ASSIGNUSID	int(11)	YES	MUL		
+DSTRDATE	datetime	YES				# Date/Time
+DSTRMSG		varchar(4000)	YES				# Subject
+DENDDATE	datetime	YES			
+DENDTYPE	int(11)	YES			
+DENDMSG		varchar(4000)	YES			
+DFBDATE		datetime	YES			
+DFBTYPE		int(11)	YES			
+DFBMSG		varchar(4000)	YES				# Update Flag
+DIFFCULTY	int(11)	YES			
+ASSIGNTYPE	int(11)	YES			
+CALLBACKTYPE	int(11)	YES			
+CALLBACKDATE	datetime	YES			
+DENYCODE	int(11)	YES			
+DREQDATE	datetime	YES			

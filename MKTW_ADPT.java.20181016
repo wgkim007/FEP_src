@@ -1,0 +1,109 @@
+import	java.io.*;
+import	java.net.ServerSocket;
+import	java.net.Socket;
+import	java.util.Arrays;
+
+class XML_Recv implements Runnable
+{
+	Thread			t;
+	private	Socket		socket = null;
+	private	ServerSocket	server = null;
+	private final	int	port;
+
+	public XML_Recv(int port) {
+		this.port = port;
+	}
+
+	public void run()
+	{
+		try {
+			server = new ServerSocket(port);
+			System.out.println("Server started");
+			System.out.println("Waiting for a client");
+
+			while ( true ) {
+				socket = server.accept();
+				System.out.println("Client accepted");
+
+				BufferedReader in  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+				char	buffer[] = new char[1024];
+				int	count = in.read(buffer, 0, 128);
+				int	filenm_len = 0;
+				for (int i = 0 ; i < count ; i++) {
+					if ( buffer[i] == 0x00 ) {
+						filenm_len = i;
+						break;
+					}
+				}
+
+				String	filename = new String(buffer, 0, filenm_len);
+
+				System.out.println("head: [" + filename +"]");
+			
+				String	fullname = "./" + filename;
+				PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fullname)));
+
+				String	line = "";
+				while ( true ) {
+					try {
+						line = in.readLine();
+						System.out.println("data:" + line);
+					} catch(IOException msg) {
+						System.out.println("ERROR: readLine " + msg);
+						break;
+					}
+
+					if ( line == null ) {
+						break;
+					}
+
+					out.println(line);
+				}
+				System.out.println("Closing connection");
+
+				out.close();
+				in.close();
+				socket.close();
+			}
+		} catch(IOException msg) {
+			System.out.println(msg);
+		}
+	}
+}
+
+class ADPT_Proc implements Runnable
+{
+	Thread			t;
+	private final	int	sleep_sec;
+
+	public ADPT_Proc(int sleep_sec) {
+		this.sleep_sec = sleep_sec;
+	}
+
+	public void run()
+	{
+		while ( true ) {
+			System.out.println("ADPT_Proc Sleep");
+
+			try {
+				Thread.sleep(sleep_sec * 1000);
+			} catch(InterruptedException msg) {
+				System.out.println(msg);
+			}
+		
+		}
+	}
+}
+
+public class MKTW_ADPT
+{
+	public static	void main(String[] args) throws Exception
+	{
+		Thread	th_XMLRecv   = new Thread(new XML_Recv(20000));
+		Thread	th_ADPT_Proc = new Thread(new ADPT_Proc(5));
+
+		th_XMLRecv.start();
+		th_ADPT_Proc.start();
+	}
+}

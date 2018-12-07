@@ -1,0 +1,74 @@
+import	java.io.*;
+import	java.net.ServerSocket;
+import	java.net.Socket;
+import	java.util.Arrays;
+
+public class Server
+{
+	private	Socket		socket = null;
+	private	ServerSocket	server = null;
+
+	public Server(int port)
+	{
+		try {
+			server = new ServerSocket(port);
+			System.out.println("Server started");
+			System.out.println("Waiting for a client");
+
+			while ( true ) {
+				socket = server.accept();
+				System.out.println("Client accepted");
+
+				BufferedReader in  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+				char	buffer[] = new char[1024];
+				int	count = in.read(buffer, 0, 128);
+				int	filenm_len = 0;
+				for (int i = 0 ; i < count ; i++) {
+					if ( buffer[i] == 0x00 ) {
+						filenm_len = i;
+						break;
+					}
+				}
+
+				String	filename = new String(buffer, 0, filenm_len);
+
+				System.out.println("head: [" + filename +"]");
+			
+				String	fullname = "./" + filename;
+				PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fullname)));
+
+				String	line = "";
+				while ( true ) {
+					try {
+						line = in.readLine();
+						System.out.println("data:" + line);
+					} catch(IOException msg) {
+						System.out.println("ERROR: readLine " + msg);
+						break;
+					}
+
+					if ( line == null ) {
+						break;
+					}
+
+					out.println(line);
+				}
+				System.out.println("Closing connection");
+
+				out.close();
+				in.close();
+				socket.close();
+			}
+		} catch(IOException msg) {
+			System.out.println(msg);
+		}
+	}
+
+	public static	void main(String args[])
+	{
+		while ( true ) {
+			Server	server = new Server(20000);
+		}
+	}
+}
